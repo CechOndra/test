@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kalkulacka bodu pro prijimacky na PFUK</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        input {
+            width: 80px;
+            padding: 5px;
+            margin: 5px;
+            text-align: center;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        #result {
+            margin-top: 20px;
+        }
+	h4 {
+		margin-bottom:0;
+		margin-top: 5px;
+	}
+	h3 {
+		margin-top: 5px;
+	}
+	h2 {
+		margin-bottom:10px;
+	}
+    </style>
+</head>
+<body>
+    <h2>Kalkulačka bodů pro přijímačky na PFUK</h2>
+    <button onclick="inputIndividually()">ZADAT ODDÍLY OSP a ZSV</button>
+    <button onclick="inputDirectly()">ZADAT OSP a ZSV</button>
+    <br><br>
+    <div id="inputFields" style="display:none;">
+        <h3>Zadej percentily jednotlivých oddílů OSP a ZSV</h3>
+	<h4>OSP</h4>
+        <label for="analyt">ANALYT:</label>
+        <input type="number" id="analyt" min="0" max="100" step="0.1" required><br>
+        <label for="verbal">VERBAL:</label>
+        <input type="number" id="verbal" min="0" max="100" step="0.1" required><br>
+        <h4>ZSV</h4>
+	<label for="clovek">CLOVEK:</label>
+        <input type="number" id="clovek" min="0" max="100" step="0.1" required><br>
+        <label for="pravo">PRAVO:</label>
+        <input type="number" id="pravo" min="0" max="100" step="0.1" required><br>
+        <label for="hospodarstvi">HOSPODÁŘSTVÍ:</label>
+        <input type="number" id="hospodarstvi" min="0" max="100" step="0.1" required><br>
+    </div>
+    <div id="directInputFields" style="display:none;">
+        <h3>Zadej celkové percentily pro OSP a ZSV</h3>
+        <label for="ospDirect">OSP:</label>
+        <input type="number" id="ospDirect" min="0" max="100" step="0.1" required><br>
+        <label for="zsvDirect">ZSV:</label>
+        <input type="number" id="zsvDirect" min="0" max="100" step="0.1" required><br>
+    </div>
+    <button onclick="calculate()">Calculate</button><br>
+    <div id="result"></div>
+
+    <script>
+        function inputDirectly() {
+            document.getElementById('inputFields').style.display = 'none';
+            document.getElementById('directInputFields').style.display = 'block';
+        }
+
+        function inputIndividually() {
+            document.getElementById('inputFields').style.display = 'block';
+            document.getElementById('directInputFields').style.display = 'none';
+        }
+
+        function calculate() {
+            var osp, zsv;
+            if (document.getElementById('inputFields').style.display === 'block') {
+                // Calculate OSP and ZSV from subcategories
+                var analyt = parseFloat(document.getElementById('analyt').value);
+                var verbal = parseFloat(document.getElementById('verbal').value);
+                var clovek = parseFloat(document.getElementById('clovek').value);
+                var pravo = parseFloat(document.getElementById('pravo').value);
+                var hospodarstvi = parseFloat(document.getElementById('hospodarstvi').value);
+
+                // Check if subcategories are valid numbers
+                if (isNaN(analyt) || isNaN(verbal) || isNaN(clovek) || isNaN(pravo) || isNaN(hospodarstvi) || 
+                    analyt < 0 || analyt > 100 || verbal < 0 || verbal > 100 || clovek < 0 || clovek > 100 || 
+                    pravo < 0 || pravo > 100 || hospodarstvi < 0 || hospodarstvi > 100) {
+                    alert('Tak si dement?!\n Zadej prosím korektní hodnoty pro OSP and ZSV (0 až 100).');
+                    return;
+                }
+
+                // Calculate OSP and ZSV
+                osp = (analyt + verbal) / 2;
+                zsv = (clovek + pravo + hospodarstvi) / 3;
+            } else {
+                // Get OSP and ZSV directly
+                osp = parseFloat(document.getElementById('ospDirect').value);
+                zsv = parseFloat(document.getElementById('zsvDirect').value);
+
+                // Check if OSP and ZSV are valid numbers
+                if (isNaN(osp) || isNaN(zsv) || osp < 0 || osp > 100 || zsv < 0 || zsv > 100) {
+                    alert('Tak si dement?!\n Zadej prosím korektní hodnoty pro OSP and ZSV (0 až 100).');
+                    return;
+                }
+            }
+
+            // Calculate SCIO
+            var scio = (1.25 * osp) + (0.75 * zsv);
+
+            // Calculate C2
+            var c2 = scio + 5;
+
+            // Calculate BONIF
+            var bonif = c2 + 5;
+
+            // Display results
+            if (document.getElementById('inputFields').style.display === 'block') {
+                document.getElementById('result').innerHTML = 'OSP: ' + osp.toFixed(2) + '<br>' + 'ZSV: ' + zsv.toFixed(2) + '<br>' +
+								'<br>' + // Add a one-line space here
+								'Výsledný percentil: ' + scio.toFixed(2) + '<br>' +
+                                                                '<br>' + // Add a one-line space here
+                                                                'Body pouze za C2: ' + c2.toFixed(2) + '<br>' +
+                                                                '<br>' + // Add a one-line space here
+                                                                'Body za C2 a Vysvědčení: ' + bonif.toFixed(2);
+            } else {
+                document.getElementById('result').innerHTML = 'Výsledný percentil: ' + scio.toFixed(2) + '<br>' +
+                                                                '<br>' + // Add a one-line space here
+                                                                'Body pouze za C2: ' + c2.toFixed(2) + '<br>' +
+                                                                '<br>' + // Add a one-line space here
+                                                                'Body za C2 a Vysvědčení: ' + bonif.toFixed(2);
+            }
+        }
+    </script>
+</body>
+</html>
